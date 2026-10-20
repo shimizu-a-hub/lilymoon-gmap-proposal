@@ -1,0 +1,1040 @@
+<title>Li LyMoon Googleマップ改善案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500&family=Shippori+Mincho+B1:wght@600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+  /* Layout: 1カラムの資料。各項目は「修正前 / 修正後」を左右に並べ、下に写真ごとの内容 */
+  :root {
+    --bg: #f6f5f8;
+    --surface: #ffffff;
+    --fg: #25212b;
+    --muted: #6b6574;
+    --line: #e1dde7;
+    --accent: #7b4d8e;
+    --accent-soft: #efe7f3;
+    --before: #b5472f;
+    --before-soft: #fbece8;
+    --after: #2e7656;
+    --after-soft: #e6f3ec;
+    --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+    --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17151b; --surface: #211e26; --fg: #ece8f1; --muted: #a59eaf; --line: #36313d;
+      --accent: #c49ad6; --accent-soft: #2f2537; --before: #ec8a72; --before-soft: #3a2420;
+      --after: #73c79f; --after-soft: #1d3329; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17151b; --surface: #211e26; --fg: #ece8f1; --muted: #a59eaf; --line: #36313d;
+    --accent: #c49ad6; --accent-soft: #2f2537; --before: #ec8a72; --before-soft: #3a2420;
+    --after: #73c79f; --after-soft: #1d3329; color-scheme: dark;
+  }
+
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.75; }
+  .wrap { max-width: 960px; margin: 0 auto; padding-inline: 16px; padding-block: 40px 64px; display: grid; gap: 40px; }
+  h1, h2, h3, h4 { text-wrap: balance; margin: 0; line-height: 1.4; }
+  p { margin: 0; }
+
+  header { display: grid; gap: 10px; }
+  .eyebrow { font-size: 12px; letter-spacing: .12em; color: var(--muted); }
+  h1 { font-family: var(--font-display); font-size: clamp(24px, 4vw, 32px); font-weight: 600; }
+  .lead { color: var(--muted); max-width: 62ch; }
+
+  .status { display: flex; flex-wrap: wrap; gap: 8px; }
+  .status a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); text-decoration: none; font-size: 13px; }
+  .status a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .status a.done .dot { background: var(--accent); }
+  .status a.done { border-color: var(--accent); }
+  .status small { color: var(--muted); font-size: 11px; }
+
+  section.item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(18px, 4vw, 32px); display: grid; gap: 32px; }
+  .item-head { display: grid; gap: 8px; }
+  .item-head h2 { font-size: 22px; }
+  .summary { font-size: 17px; font-weight: 500; }
+  .summary mark { background: var(--accent-soft); color: var(--fg); padding: 0 4px; border-radius: 4px; }
+
+  .compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: start; }
+  .arrow { align-self: center; font-size: 28px; color: var(--muted); }
+  .panel { display: grid; gap: 12px; justify-items: center; min-width: 0; }
+  .tag { font-size: 12px; font-weight: 700; letter-spacing: .1em; padding: 3px 12px; border-radius: 999px; }
+  .tag.before { background: var(--before-soft); color: var(--before); }
+  .tag.after { background: var(--after-soft); color: var(--after); }
+  .caption { font-size: 12px; color: var(--muted); text-align: center; max-width: 320px; }
+
+  /* 修正前: 実際のスクリーンショット（y=150〜1400pxを切り出し）に修正箇所の枠を重ねる */
+  .shot { position: relative; width: 100%; max-width: 320px; aspect-ratio: 869 / 1250; overflow: hidden; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
+  .shot img { display: block; width: 100%; margin-top: -17.26%; }
+  .mark { position: absolute; border: 3px solid var(--before); border-radius: 10px; }
+  .mark span, .num { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 13px; flex: none; }
+  .mark span { position: absolute; top: -12px; left: -12px; background: var(--before); }
+  .m1 { left: 4.2%; top: 33%; width: 66%; height: 57.5%; }
+  .m2 { left: 71.5%; top: 33%; width: 27.5%; height: 28.5%; }
+  .m3 { left: 71.5%; top: 62%; width: 27.5%; height: 28.5%; }
+  .num.b { background: var(--before); }
+  .num.a { background: var(--after); }
+
+  /* 修正後: 同じ並びのモック。4枚目は横スクロールで出る位置 */
+  .phone { width: 100%; max-width: 320px; border-radius: 18px; border: 1px solid var(--line); background: #fff; color: #202124; padding: 16px 0 14px 12px; display: grid; gap: 10px; overflow: hidden; }
+  .phone .name { font-size: 17px; font-weight: 700; line-height: 1.35; padding-right: 12px; }
+  .phone .meta { font-size: 12px; color: #5f6368; }
+  .phone .stars { color: #e7a400; }
+  .grid4 { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: 6px; aspect-ratio: 1 / 0.95; margin-right: 12px; }
+  .slot { position: relative; overflow: hidden; border-radius: 10px; border: 3px solid var(--after); background: #f2eef5; }
+  .slot.main { grid-row: 1 / 3; }
+  .slot.peek { grid-column: 3; grid-row: 1 / 3; }
+  .slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slot .num { position: absolute; top: 5px; left: 5px; width: 22px; height: 22px; font-size: 12px; background: var(--after); }
+  .slot .label { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 6px 5px; font-size: 10px; line-height: 1.35; color: #fff; background: linear-gradient(to top, rgba(20,16,24,.85), rgba(20,16,24,0)); }
+  /* 写真に重ねる店名ロゴ（仮。正式なロゴ画像が届いたら差し替え） */
+  .logo { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-family: "Cormorant Garamond", "Times New Roman", serif; font-style: italic; font-weight: 500; color: #fff; letter-spacing: .02em; line-height: 1; text-shadow: 0 0 6px rgba(255,255,255,.9), 0 0 16px rgba(255,240,250,.7), 0 1px 3px rgba(40,20,40,.5); pointer-events: none; }
+  .slot .logo { font-size: 26px; top: 57%; }
+  .card .logo { font-size: clamp(40px, 9vw, 64px); top: 63%; }
+  .phone .tabs { display: flex; justify-content: space-between; font-size: 11px; color: #5f6368; border-bottom: 1px solid #e3e3e3; padding: 0 12px 6px 0; }
+  .phone .tabs b { color: #0b6e78; }
+
+  h3 { font-size: 17px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+  h3 small { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .block { display: grid; gap: 16px; }
+  .note { font-size: 12px; color: var(--muted); }
+
+  /* 修正内容の表 */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
+  th, td { text-align: left; vertical-align: top; padding: 12px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .06em; }
+  td .num { width: 22px; height: 22px; font-size: 12px; margin-right: 6px; vertical-align: 1px; }
+  td.now { color: var(--muted); }
+
+  /* 写真ごとのカード */
+  .order { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; background: var(--surface); }
+  .card .pic { aspect-ratio: 1 / 1; background: var(--bg); position: relative; }
+  .card .pic img { width: 100%; height: 100%; display: block; object-fit: contain; }
+  .card .pic img.cover { object-fit: cover; }
+  .card .pic .ex { position: absolute; right: 8px; bottom: 8px; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: rgba(20,16,24,.7); color: #fff; }
+  .card .body { padding: 14px 16px 16px; display: grid; gap: 10px; align-content: start; }
+  .card h4 { font-size: 15px; display: flex; gap: 8px; align-items: center; }
+  .card .pos { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .card dl { margin: 0; display: grid; grid-template-columns: 4.5em 1fr; gap: 6px 10px; font-size: 13px; }
+  .card dt { color: var(--muted); }
+  .card dd { margin: 0; min-width: 0; }
+  .req { display: inline-block; font-size: 11px; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 5px; margin-left: 4px; }
+
+  /* 3枚目以降の記載ルール */
+  .rule { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 12px; padding: 18px; display: grid; gap: 12px; }
+  .rule-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+  .rule-grid div { background: var(--surface); border-radius: 8px; padding: 10px; display: grid; gap: 2px; align-content: start; }
+  .rule-grid b { font-size: 13px; }
+  .rule-grid span { font-size: 12px; color: var(--muted); }
+  .rule-grid code { font-family: inherit; font-size: 12px; color: var(--accent); font-weight: 700; }
+
+  .ask { display: grid; gap: 8px; padding: 0; margin: 0; list-style: none; }
+  .ask li { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border-radius: 10px; background: var(--bg); }
+  .ask li::before { content: ""; flex: none; width: 14px; height: 14px; border: 2px solid var(--muted); border-radius: 3px; transform: translateY(2px); }
+
+  /* サービス: 修正前のスクリーンショット（y=280〜1000pxを切り出し） */
+  .svc-shot { position: relative; width: 100%; max-width: 320px; aspect-ratio: 869 / 720; overflow: hidden; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
+  .svc-shot img { display: block; width: 100%; margin-top: -32.2%; }
+  .svc-mark { left: 2%; top: 43%; width: 98%; height: 37%; }
+  .svc-phone { width: 100%; max-width: 320px; border-radius: 18px; border: 1px solid var(--line); background: #fff; color: #202124; padding: 14px 0 16px 12px; display: grid; gap: 10px; overflow: hidden; }
+  .svc-phone .seg { display: grid; grid-template-columns: 1fr 1fr; font-size: 12px; text-align: center; margin-right: 12px; }
+  .svc-phone .seg span { padding: 5px 0; border-radius: 6px; color: #5f6368; }
+  .svc-phone .seg span:first-child { background: #dfe3e5; color: #202124; }
+  .svc-phone .ttl { font-size: 13px; font-weight: 700; }
+  .thumbs { display: grid; grid-template-columns: repeat(3, 42%); gap: 6px; }
+  .thumbs div { position: relative; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 3px solid var(--after); }
+  .thumbs img { width: 100%; height: 100%; object-fit: cover; object-position: 0 0; display: block; }
+  .thumbs .num { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; font-size: 11px; background: var(--after); }
+
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .gallery figure { margin: 0; display: grid; gap: 6px; align-content: start; }
+  .gallery img { width: 100%; display: block; border-radius: 8px; border: 1px solid var(--line); }
+  .gallery figcaption { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .gallery figcaption b { color: var(--fg); font-weight: 500; }
+  .old { aspect-ratio: 869 / 1085; overflow: hidden; border-radius: 8px; border: 1px solid var(--line); background: #f3eee8; }
+  .old img { border: 0; border-radius: 0; margin-top: -45.8%; }
+  .old.board img { margin-top: -58%; }
+
+  /* サービス: 追加する画像 */
+  .add-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .card.add { padding: 16px; gap: 12px; grid-template-rows: none; align-content: start; display: grid; }
+  .card.add > p { font-size: 13px; color: var(--muted); }
+  .add-head { display: grid; gap: 6px; justify-items: start; }
+  .add-head h4 { font-size: 16px; }
+  .state { font-size: 11px; font-weight: 700; padding: 1px 10px; border-radius: 999px; }
+  .state.wait { background: var(--before-soft); color: var(--before); }
+  .state.done { background: var(--after-soft); color: var(--after); }
+  .refpair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+  .refpair figure { margin: 0; display: grid; gap: 4px; }
+  .refpair img { width: 100%; display: block; border-radius: 8px; border: 1px solid var(--line); }
+  .refpair figcaption { font-size: 11px; color: var(--muted); line-height: 1.45; }
+  .refpair figcaption b { color: var(--fg); font-weight: 500; }
+  .refpair .old img { border: 0; border-radius: 0; }
+  .old.ref3 img { margin-top: -45.8%; }
+  .old.ref4 { aspect-ratio: 923 / 1150; background: #e9e6e8; }
+  .old.ref4 img { margin-top: -20%; }
+  .sq-ref { aspect-ratio: 869 / 1085; overflow: hidden; border-radius: 8px; border: 1px solid var(--line); }
+  .refpair .sq-ref img { height: 100%; object-fit: cover; object-position: 50% 33%; border: 0; border-radius: 0; }
+  .placeholder { aspect-ratio: 869 / 1085; border: 2px dashed var(--before); border-radius: 8px; display: grid; place-items: center; text-align: center; font-size: 12px; color: var(--before); background: var(--before-soft); }
+
+  /* サービス（まつげサロン）: 一覧の並び */
+  .gbp-list { width: 100%; max-width: 340px; margin: 0; padding: 6px 0; list-style: none; border: 1px solid var(--line); border-radius: 18px; background: #fff; color: #202124; counter-reset: n; }
+  .gbp-list li { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 14px; font-size: 13px; border-top: 1px solid #ececec; }
+  .gbp-list li:first-child { border-top: 0; }
+  .gbp-list li:not(.grp)::before { counter-increment: n; content: counter(n); font-size: 11px; color: #80868b; text-align: right; }
+  .gbp-list li b { font-weight: 500; }
+  .gbp-list li span { font-size: 12px; color: #5f6368; font-variant-numeric: tabular-nums; }
+  .gbp-list li.grp { display: block; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--after); background: var(--after-soft); border-top: 0; padding: 3px 14px; }
+  .before-list li:nth-child(2), .before-list li:nth-child(3) { background: var(--before-soft); }
+  .before-list li:nth-child(9) { background: var(--before-soft); }
+  .order-table td:nth-child(4) { font-size: 12px; max-width: 34em; }
+  .order-table td:nth-child(2) { font-size: 12px; text-align: center; }
+  .order-table th:nth-child(2) { text-align: center; }
+  .gbp-list li.new { background: var(--after-soft); }
+  .grp-row td { background: var(--bg); font-size: 12px; font-weight: 700; color: var(--after); padding: 6px 10px; }
+
+  /* クチコミ */
+  .review-now { display: flex; flex-wrap: wrap; gap: 24px; align-items: start; }
+  .review-shot { width: 100%; max-width: 280px; aspect-ratio: 869 / 1100; overflow: hidden; border-radius: 18px; border: 1px solid var(--line); background: #fff; }
+  .review-shot img { display: block; width: 100%; margin-top: -32.2%; }
+  .info-shot { aspect-ratio: 869 / 1290; }
+  .info-shot img { margin-top: -44.7%; }
+  .facts { margin: 0; display: grid; grid-template-columns: 4em 1fr; gap: 8px 14px; font-size: 14px; min-width: 0; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; }
+
+  /* 写真: 今後の掲載予定 */
+  .plan-label { font-size: 14px; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+  .gallery.plan { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .gallery.plan .sq { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px; border: 1px solid var(--line); }
+  .gallery.plan .sq img { width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 0; }
+  .logo-s { position: absolute; left: 0; right: 0; top: 58%; transform: translateY(-50%); text-align: center; font-family: "Cormorant Garamond", "Times New Roman", serif; font-style: italic; font-weight: 500; font-size: 20px; color: #fff; text-shadow: 0 0 6px rgba(255,255,255,.9), 0 0 14px rgba(255,240,250,.7), 0 1px 3px rgba(40,20,40,.5); }
+
+  /* 最新情報 */
+  .crop { overflow: hidden; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+  .crop img { display: block; width: 100%; }
+  .shot-box { width: 100%; max-width: 320px; }
+  .frame43 { width: 100%; max-width: 320px; aspect-ratio: 4 / 3; border: 3px solid var(--after); border-radius: 10px; background: var(--after-soft); display: grid; place-content: center; text-align: center; gap: 6px; position: relative; }
+  .frame43::after { content: ""; position: absolute; inset: 9%; border: 2px dashed var(--after); border-radius: 6px; opacity: .6; }
+  .frame43 span { font-weight: 700; color: var(--after); }
+  .frame43 i { font-style: normal; font-size: 12px; color: var(--muted); }
+  img.wide { width: 100%; max-width: 340px; border-radius: 8px; border: 1px solid var(--line); display: block; }
+  .ref-one { margin: 0; display: grid; gap: 4px; max-width: 160px; }
+  .ref-one img { width: 100%; border-radius: 8px; border: 1px solid var(--line); }
+  .ref-one figcaption { font-size: 11px; color: var(--muted); }
+  .gallery.del { grid-template-columns: repeat(auto-fill, minmax(160px, 200px)); }
+  .design-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .tmpl { margin: 0; padding: 14px 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 13px; line-height: 1.8; white-space: pre-wrap; }
+  .refs2 { display: grid; gap: 10px; }
+  .refs2 figure { margin: 0; display: grid; gap: 4px; }
+  .refs2 figcaption { font-size: 11px; color: var(--muted); }
+  .post-table td:first-child { width: 120px; }
+  .post-table td:first-child .crop { width: 110px; }
+  .post-table td.fill { color: var(--muted); font-size: 13px; line-height: 1.9; }
+  .post-mock { width: 100%; max-width: 320px; aspect-ratio: 869 / 1400; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: #1f1f1f; container-type: inline-size; }
+  .pm-top { aspect-ratio: 869 / 625; overflow: hidden; margin: 3.5cqw 2.1cqw 0; }
+  .pm-top img { display: block; width: 100%; margin-top: -74.6%; }
+  .pm-head { aspect-ratio: 869 / 168; overflow: hidden; }
+  .pm-head img { display: block; width: 100%; margin-top: -30.1%; }
+  .post-mock.pm-auto { aspect-ratio: auto; }
+  .post-mock.pm-auto .pm-text { height: auto; padding-bottom: 3cqw; }
+  .pm-foot { aspect-ratio: 869 / 140; overflow: hidden; }
+  .pm-foot img { display: block; width: 100%; margin-top: -190%; }
+  .pm-img { margin: 0 2.1cqw; }
+  .pm-img img { display: block; width: 100%; }
+  .pm-text { margin: 0 2.1cqw; padding: 2.4cqw 4cqw 0; border-left: 1px solid #e3e3e3; border-right: 1px solid #e3e3e3; font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif; font-weight: 500; color: #1f1f1f; font-size: 2.95cqw; line-height: 3.6cqw; white-space: pre-line; letter-spacing: 0; height: 100%; }
+  .design-pair.single { grid-template-columns: minmax(0, 520px); }
+  @media (max-width: 760px) { .design-pair { grid-template-columns: 1fr; } }
+
+  /* 撮り方と加工方法 */
+  .ref-list { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px; }
+  .ref-list a { display: grid; gap: 2px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; color: var(--fg); text-decoration: none; background: var(--surface); }
+  .ref-list a:hover { border-color: var(--accent); }
+  .ref-list a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ref-no { font-weight: 700; font-size: 14px; }
+  .ref-url { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .ref-go { font-size: 12px; color: var(--accent); font-weight: 500; margin-top: 4px; }
+  /* 全体: 修正前と完成形 */
+  .movie { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+  .movie h3 { font-size: 16px; }
+  .movie-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 280px)); justify-content: center; gap: 24px; }
+  .movie-pair figure { margin: 0; display: grid; gap: 8px; justify-items: center; min-width: 0; }
+  .movie video { width: 100%; aspect-ratio: 590 / 1280; border-radius: 18px; background: #000; display: block; }
+  @media (max-width: 520px) { .movie-pair { gap: 10px; } }
+  .ba-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 18px; }
+  .ba { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 12px; align-content: start; }
+  .ba h3 { font-size: 15px; }
+  .ba-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ba-pair figure { margin: 0; display: grid; gap: 8px; justify-items: center; min-width: 0; }
+  .ba-pair img { width: 100%; aspect-ratio: 1179 / 2556; object-fit: cover; object-position: top; border-radius: 12px; border: 1px solid var(--line); display: block; background: #fff; }
+
+  .pending { display: grid; gap: 10px; }
+  .pending div { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  .pending span { color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 760px) {
+    .compare { grid-template-columns: 1fr; }
+    .arrow { transform: rotate(90deg); justify-self: center; }
+    .order { grid-template-columns: 1fr; }
+    .rule-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">LI LYMOON EYELASH ・ GOOGLEマップ（MEO） ・ 2026年10月20日</p>
+    <h1>Googleマップ 改善案</h1>
+    <p class="lead">Googleマップの店舗ページを、6つの項目ごとに「今どうなっているか」と「どう変えるか」で並べました。赤い番号が今の問題箇所、緑の番号が修正後に載せる写真です。</p>
+    <nav class="status" aria-label="項目ごとの進み具合">
+      <a href="#overall" class="done"><span class="dot"></span>全体 <small>修正前と完成形</small></a>
+      <a href="#gaiyou" class="done"><span class="dot"></span>概要 <small>改善案あり</small></a>
+      <a href="#service" class="done"><span class="dot"></span>サービス <small>改善案あり</small></a>
+      <a href="#reviews" class="done"><span class="dot"></span>クチコミ <small>修正なし</small></a>
+      <a href="#photos" class="done"><span class="dot"></span>写真 <small>修正なし</small></a>
+      <a href="#posts" class="done"><span class="dot"></span>最新情報 <small>改善案あり</small></a>
+      <a href="#info" class="done"><span class="dot"></span>情報 <small>修正なし</small></a>
+      <a href="#howto"><span class="dot"></span>撮り方と加工方法 <small>参考動画</small></a>
+    </nav>
+  </header>
+
+  <section class="item" id="overall">
+    <div class="item-head">
+      <p class="eyebrow">全体</p>
+      <h2>修正前と完成形</h2>
+      <p class="summary">Googleマップの各項目を、<mark>今の画面</mark>と<mark>改善案をすべて反映した完成形</mark>で並べました。</p>
+    </div>
+    <div class="movie">
+      <h3>動画で比べる <small>店舗ページを、概要から順にタップしてスクロールした様子</small></h3>
+      <div class="movie-pair">
+        <figure><span class="tag before">修正前（今の画面・47秒）</span><video src="全体の動画.mp4" controls playsinline muted preload="metadata" poster="概要.jpg"></video></figure>
+        <figure><span class="tag after">完成形（47秒）</span><video src="完成形/完成形_全体の動画.mp4" controls playsinline muted preload="metadata" poster="完成形/01_概要.png"></video></figure>
+      </div>
+      <p class="note">流れ: 概要 → サービス（メニュー画像を横にスクロール）→ まつげサロン → クチコミ → 写真 → 最新情報 → 情報</p>
+    </div>
+    <div class="ba-grid">
+      <article class="ba">
+        <h3>概要 <small>上部の写真を症例写真に</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="概要.jpg" alt="概要の今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/01_概要.png" alt="概要の完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+      <article class="ba">
+        <h3>サービス（概要） <small>メニュー画像を作り直し</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="サービス概要.jpg" alt="サービス（概要）の今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/03_サービス_概要.png" alt="サービス（概要）の完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+      <article class="ba">
+        <h3>サービス（まつげサロン） <small>メニューの並び替え</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="サービスまつげサロン_旧1.jpg" alt="サービス（まつげサロン）の今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/04_サービス_まつげサロン_1.png" alt="サービス（まつげサロン）の完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+      <article class="ba">
+        <h3>クチコミ <small>修正なし</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="口コミ.jpg" alt="クチコミの今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/07_クチコミ.png" alt="クチコミの完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+      <article class="ba">
+        <h3>写真 <small>概要・サービスの写真がまとめて表示</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="写真.jpg" alt="写真の今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/08_写真_1.png" alt="写真の完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+      <article class="ba">
+        <h3>最新情報 <small>投稿の整理と画像の作り直し</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="最新情報_旧5.jpg" alt="最新情報の今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/10_最新情報_1.png" alt="最新情報の完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+      <article class="ba">
+        <h3>情報 <small>修正なし</small></h3>
+        <div class="ba-pair">
+          <figure><span class="tag before">修正前</span><img src="情報_旧.jpg" alt="情報の今の画面" loading="lazy"></figure>
+          <figure><span class="tag after">完成形</span><img src="完成形/13_情報.png" alt="情報の完成形の画面" loading="lazy"></figure>
+        </div>
+      </article>
+    </div>
+    <p class="note">完成形の写真は他店の写真を仮に置いたイメージです。実際は当店で施術した写真に置き換えます。各項目の詳しい修正内容は、このあとに続きます。</p>
+  </section>
+
+  <section class="item" id="gaiyou">
+    <div class="item-head">
+      <p class="eyebrow">項目 1 / 6</p>
+      <h2>概要</h2>
+      <p class="summary">店舗ページの上に出る写真を、<mark>当店の症例と施術内容（カール・長さ・色・毛質）が一目で分かる写真</mark>に入れ替えます。</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel">
+        <span class="tag before">修正前（今の画面）</span>
+        <div class="shot">
+          <img src="概要.jpg" alt="今のGoogleマップ概要画面。上部に内装写真、予約手順の画面写真、目元の写真が並ぶ">
+          <div class="mark m1"><span>1</span></div>
+          <div class="mark m2"><span>2</span></div>
+          <div class="mark m3"><span>3</span></div>
+        </div>
+        <p class="caption">内装・予約手順・ネットの目元画像が並び、どんな仕上がりになるのかが伝わらない</p>
+      </div>
+
+      <div class="arrow" aria-hidden="true">→</div>
+
+      <div class="panel">
+        <span class="tag after">修正後（イメージ）</span>
+        <div class="phone" role="img" aria-label="修正後の概要画面のイメージ。1枚目におすすめメニューの症例、2枚目に症例一覧、3枚目に施術内容入りの目元写真が並ぶ">
+          <div>
+            <div class="name">Li LyMoon EYELASH【リリームーン】</div>
+            <div class="meta">4.7 <span class="stars">★★★★★</span> (3) ・ まつげサロン</div>
+          </div>
+          <div class="grid4">
+            <div class="slot main">
+              <img src="概要_新3.jpg" alt="" style="object-position: 50% 45%">
+              <span class="logo">Li LyMoon</span>
+              <span class="num">1</span>
+              <span class="label">おすすめメニューの症例</span>
+            </div>
+            <div class="slot">
+              <img src="概要_新6.png" alt="" style="object-position: 0 0">
+              <span class="num">2</span>
+              <span class="label">症例一覧</span>
+            </div>
+            <div class="slot">
+              <img src="概要_新5.png" alt="" style="object-position: 50% 45%">
+              <span class="num">3</span>
+              <span class="label">正面＋施術内容</span>
+            </div>
+          </div>
+          <div class="tabs"><b>概要</b><span>サービス</span><span>クチコミ</span><span>写真</span><span>最新情報</span><span>情報</span></div>
+        </div>
+        <p class="caption">写真は他店の例を仮に置いたイメージです。実際は当店で施術した写真を撮って使います。4枚目以降は横にスクロールすると出てきます。</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>修正内容</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>場所</th><th>今の写真</th><th>変更後の写真</th><th>変える理由</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>メイン（大）</td>
+              <td class="now"><span class="num b">1</span>白いソファの内装写真。枠の装飾付きで画質が粗い</td>
+              <td><span class="num a">1</span><strong>おすすめメニューの症例</strong><br>人気の「&amp;healthy」「フラットラッシュ」の仕上がり</td>
+              <td>店として推したいメニューを、いちばん目に入る場所で見せる</td>
+            </tr>
+            <tr>
+              <td>右上</td>
+              <td class="now"><span class="num b">2</span>ホットペッパーの予約手順のスクリーンショット</td>
+              <td><span class="num a">2</span><strong>メニュー別の症例一覧</strong><br>症例写真の中に、メニュー名・カールと長さ・本数/色を書き込む</td>
+              <td>症例を見ながら、扱っているカール・長さ・色・毛質がすぐ分かる</td>
+            </tr>
+            <tr>
+              <td>右下</td>
+              <td class="now"><span class="num b">3</span>ネットで拾った目元の画像。当店の施術との関連が低い</td>
+              <td><span class="num a">3</span><strong>正面の目元＋施術内容</strong><br>正面からの目元写真に、カール・毛質・色などを記載</td>
+              <td>検索した人が、当店の実際の仕上がりと施術内容をすぐ確認できる</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>修正後に載せる写真 <small>上から見える順番。写真はすべて他店の例</small></h3>
+      <div class="order">
+        <article class="card">
+          <div class="pic"><img class="cover" src="概要_新3.jpg" alt="例: 明るい色味の目元アップ" style="object-position: 50% 45%"><span class="logo">Li LyMoon</span><span class="ex">他店の例＋店名ロゴ（仮）</span></div>
+          <div class="body">
+            <h4><span class="num a">1</span>おすすめメニューの症例 <span class="pos">メイン（大）</span></h4>
+            <dl>
+              <dt>載せる写真</dt><dd>店として推したい人気メニュー「&amp;healthy」「フラットラッシュ」の仕上がり</dd>
+              <dt>ロゴ</dt><dd>写真の下寄りにお店のロゴを入れる（参考: <a href="概要_新.jpg">概要_新</a> のphoOsのロゴ）</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="pic"><img src="概要_新6.png" alt="例: 9人分の目元写真を3列3段に並べ、それぞれにカールと長さ、メニュー名、本数と色を書き込んだ一覧"><span class="ex">他店の例</span></div>
+          <div class="body">
+            <h4><span class="num a">2</span>メニュー別の症例一覧 <span class="pos">右上</span></h4>
+            <dl>
+              <dt>載せる写真</dt><dd>目元の症例写真を3×3で並べた1枚</dd>
+              <dt>書き込む内容</dt><dd>各写真に、メニュー名（&amp;healthy・flat lash・upward lash）、カールと長さ（C9・D12・LC10 など）、本数/色（120/moca・140/Black など）</dd>            </dl>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="pic"><img src="概要_新5.png" alt="例: 正面からの目元写真3段に、FLATLASH120、オプション&amp;healthy、C10-11-12-J12、カラーBLACK、LEDエクステを書き込んだ写真"><span class="ex">他店の例</span></div>
+          <div class="body">
+            <h4><span class="num a">3</span>正面の目元＋施術内容 <span class="pos">右下</span></h4>
+            <dl>
+              <dt>載せる写真</dt><dd>正面から撮った目元のアップ<span class="req">必須</span></dd>
+              <dt>書き込む内容</dt><dd>FLATLASH 120 ＋ オプション &amp;healthy / C10-11-12-J12 / COLOR: BLACK / LEDエクステ<span class="req">必須</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="pic"><img src="概要_新7.png" alt="例: 正面の顔写真にFlat lash 140/black、目元アップにD12・D13・D12、目を閉じた状態の写真"><span class="ex">他店の例</span></div>
+          <div class="body">
+            <h4><span class="num a">4</span>正面の目元＋施術内容 <span class="pos">横スクロール</span></h4>
+            <dl>
+              <dt>載せる写真</dt><dd>正面から撮った目元のアップ<span class="req">必須</span>。目を閉じた状態も添えると仕上がりがより伝わる</dd>
+              <dt>書き込む内容</dt><dd>Flat lash 140/black / D12・D13・D12 / LEDでモチUP<span class="req">必須</span></dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="pic"><img class="cover" src="サービス概要_新10.png" alt="例: 同じ目元でJ・C・D・Rカールを比べ、それぞれの特徴を書き込んだ写真" style="object-position: 50% 33%"><span class="ex">他店の例</span></div>
+          <div class="body">
+            <h4><span class="num a">5</span>カール別の仕上がり <span class="pos">横スクロール</span></h4>
+            <dl>
+              <dt>載せる写真</dt><dd>正面の目元を4枚並べ、カールの種類ごとの仕上がりを比べた1枚</dd>
+              <dt>書き込む内容</dt><dd>カール名（J・C・Dなど）と、それぞれの特徴（ナチュラル・ほどよいカール感・くるんと丸い など）</dd>
+            </dl>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="pic"><img class="cover" src="サービス概要_新11.png" alt="例: 目元写真3×3に、cute eye・sexy eye・doll eyeとカール×長さを書き込んだ写真" style="object-position: 50% 38%"><span class="ex">他店の例</span></div>
+          <div class="body">
+            <h4><span class="num a">6</span>なりたい目元別のデザイン <span class="pos">横スクロール</span></h4>
+            <dl>
+              <dt>載せる写真</dt><dd>正面の目元を3×3で並べた1枚</dd>
+              <dt>書き込む内容</dt><dd>デザイン名（cute eye・sexy eye・doll eye）と、目頭・中央・目尻のカール×長さ（C10・C11・C10 など）</dd>
+            </dl>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>3枚目以降の写真のルール</h3>
+      <div class="rule">
+        <p>必ず<strong>正面からの目元写真</strong>にして、写真の中に次の施術内容を書き込みます。</p>
+        <div class="rule-grid">
+          <div><b>メニュー・毛質</b><code>Flat lash</code><span>&amp;healthy など</span></div>
+          <div><b>本数</b><code>120</code><span>140 など</span></div>
+          <div><b>カール・長さ</b><code>C10-11-12-J12</code><span>目頭〜目尻の順</span></div>
+          <div><b>色</b><code>Black</code><span>moca など</span></div>
+          <div><b>オプション</b><code>LED</code><span>ある場合のみ</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>オーナーに決めていただきたいこと</h3>
+      <ul class="ask">
+        <li>メイン（1枚目）に、&amp;healthy とフラットラッシュのどちらの症例を置くか</li>
+        <li>写真に書き込む表記の統一（例: 「120/moca」のように本数/色で書くか）</li>
+        <li>症例写真を誰がいつ撮影・作成するか</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="item" id="service">
+    <div class="item-head">
+      <p class="eyebrow">項目 2 / 6</p>
+      <h2>サービス（概要）</h2>
+      <p class="summary">「サービスを表示」に並ぶメニュー画像を、<mark>どんなメニューがいくらで受けられるか一目で分かるデザイン</mark>に作り直します。</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel">
+        <span class="tag before">修正前（今の画面）</span>
+        <div class="svc-shot">
+          <img src="サービス概要.jpg" alt="今のサービス画面。営業時間とメニューの画像が並ぶ">
+          <div class="mark svc-mark"><span>!</span></div>
+        </div>
+        <p class="caption">ベージュ地に細い文字のメニュー画像が1メニュー1枚ずつ並び、小さく表示されると料金が読めない</p>
+      </div>
+
+      <div class="arrow" aria-hidden="true">→</div>
+
+      <div class="panel">
+        <span class="tag after">修正後（イメージ）</span>
+        <div class="svc-phone" role="img" aria-label="修正後のサービス画面のイメージ。新しいメニュー画像が並ぶ">
+          <div class="seg"><span>概要</span><span>まつげサロン</span></div>
+          <div class="ttl">サービスを表示</div>
+          <div class="thumbs">
+            <div><img src="サービス_メニュー画像/menu1.png" alt=""><span class="num">1</span></div>
+            <div><img src="サービス_メニュー画像/menu2.png" alt=""><span class="num">2</span></div>
+            <div><img src="サービス_メニュー画像/menu3.png" alt=""><span class="num">3</span></div>
+          </div>
+        </div>
+        <p class="caption">1枚目に全メニューの一覧、2枚目以降にメニューごとの料金表を並べます。</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>修正内容</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>今の画像</th><th>問題</th><th>変更後</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="now">バインドロック新技術の告知（ボードの写真）</td>
+              <td>5年前の告知が残っている</td>
+              <td>削除する</td>
+            </tr>
+            <tr>
+              <td class="now">メニューごとの料金表 6枚（3Dボリューム・シングル・ダブルフラット・バインドロック・フラットラッシュ・パリジェンヌ）</td>
+              <td>文字が細く薄いので、小さく表示されると読めない。おすすめのメニューが分からない。全体で何のメニューがあるか一覧できない</td>
+              <td><span class="num a">1</span><strong>全メニューの一覧</strong>（最安料金とおすすめ表示）<br><span class="num a">2</span>〜<span class="num a">6</span> <strong>メニュー別の料金表</strong>（オプション料金も同じ画像にまとめる。「まつげサロン」の一覧にしかなかったメニューも追加）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>新しいメニュー画像 <small>サービス概要_新1〜7（他店）を参考に作成。1080×1350px</small></h3>
+      <div class="gallery">
+        <figure><img src="サービス_メニュー画像/menu1.png" alt="メニュー一覧。フラットラッシュ¥4,250〜、ダブルフラット¥4,800〜、3Dボリューム¥5,980〜、バインドロック¥6,800〜、シングル¥3,150〜、パリジェンヌ¥6,600〜、&amp;healthy+¥5,400"><figcaption><b>1 メニュー一覧</b><br>全メニューの最安料金。フラットラッシュと&amp;healthyにおすすめ表示</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu2.png" alt="フラットラッシュとダブルフラットの料金表"><figcaption><b>2 フラットラッシュ</b><br>フラットラッシュ・ダブルフラット＋オプション</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu3.png" alt="3Dボリュームラッシュとバインドロックの料金表"><figcaption><b>3 ボリューム</b><br>3Dボリューム・バインドロック＋オプション</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu4.png" alt="シングルエクステの料金表"><figcaption><b>4 シングル</b><br>ミンク・ブラウンミンク/セーブル</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu5.png" alt="パリジェンヌラッシュリフト、ブラックティントパーマ、エクステオフの料金表"><figcaption><b>5 ラッシュリフト</b><br>パリジェンヌ・ブラックティントパーマ・エクステオフ</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu6.png" alt="オプションの料金表。下まつ毛エクステ、カラーエクステ、アイシャンプー、まつ毛トリートメントパック"><figcaption><b>6 オプション</b><span class="state wait" style="margin-left:6px">追加</span><br>下まつ毛・カラーエクステ・アイシャンプー・トリートメントパック・コーティング剤（店頭販売）</figcaption></figure>
+      </div>
+      <p class="note">デザインのポイント: 参考画像と同じく白地にピンクの大きな縦書きタイトル、枠付きの見出し、料金を右揃えで1行ずつ。全画像に店名ロゴと住所・電話番号を入れています。</p>
+    </div>
+
+    <div class="block">
+      <h3>「まつげサロン」の一覧と合わせた点 <small>サービスまつげサロン_旧1〜3</small></h3>
+      <p class="note" style="font-size:13px">料金表の画像になかったメニューを追加し、施術の説明は一覧の文章に合わせました。一方で、料金は料金表の画像と一覧で違うものが多くあります。画像には今の料金表の金額を入れているので、どちらが正しいかオーナーに確認が必要です。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>メニュー</th><th>料金表の画像（旧）</th><th>まつげサロンの一覧</th><th>新しい画像での扱い</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>下まつ毛エクステ</td><td class="now">なし</td><td>10本〜 ¥1,100〜</td><td><span class="state wait">追加</span> 6枚目</td></tr>
+            <tr><td>カラーエクステ</td><td class="now">なし</td><td>10本〜 ¥1,500〜（ブラウン・ベージュ・イエローなど10色）</td><td><span class="state wait">追加</span> 6枚目</td></tr>
+            <tr><td>アイシャンプー</td><td class="now">なし</td><td>¥550</td><td><span class="state wait">追加</span> 6枚目</td></tr>
+            <tr><td>まつ毛トリートメントパック</td><td class="now">なし</td><td>料金の記載なし</td><td><span class="state wait">追加</span> 6枚目（料金は「¥ ---」で仮置き）</td></tr>
+            <tr><td>ブラックティントパーマ</td><td class="now">なし</td><td>料金の記載なし（画面が途中で切れている）</td><td><span class="state wait">追加</span> 5枚目（料金は「¥ ---」で仮置き）</td></tr>
+            <tr><td>フェニックス カールアップコーティング（店頭販売）</td><td class="now">なし</td><td>なし</td><td><span class="state wait">追加</span> 6枚目（¥3,850）</td></tr>
+            <tr><td>他店で付けたエクステのオフ</td><td class="now">なし</td><td>¥2,750</td><td><span class="state wait">追加</span> 5枚目</td></tr>
+            <tr><td>パリジェンヌラッシュリフト</td><td>6週以内 ¥6,600 / 6週以降 ¥7,000</td><td>¥8,000</td><td><span class="state wait">料金が違う</span></td></tr>
+            <tr><td>シングルエクステ（ミンク）</td><td>40本 ¥3,150</td><td>40本〜 ¥3,500〜</td><td><span class="state wait">料金が違う</span></td></tr>
+            <tr><td>フラットラッシュ</td><td>40本 ¥4,250</td><td>40本〜 ¥4,600〜</td><td><span class="state wait">料金が違う</span></td></tr>
+            <tr><td>3Dボリュームラッシュ</td><td>60束 ¥5,980〜</td><td>40束〜 ¥6,200〜</td><td><span class="state wait">料金・束数が違う</span></td></tr>
+            <tr><td>ダブルフラット</td><td>20束 ¥4,800〜</td><td>80束〜 ¥7,500〜</td><td><span class="state wait">料金・束数が違う</span></td></tr>
+            <tr><td>エクステオフ（当店）</td><td>初回無料、2回目以降 ¥330 / ¥1,100</td><td>¥2,200〜</td><td><span class="state wait">料金が違う</span></td></tr>
+            <tr><td>&amp;healthy の対象</td><td>フラットラッシュ・ダブルフラット・バインドロック</td><td>フラットラッシュかダブルフラットのみ（単品不可）</td><td><span class="state wait">対象が違う</span></td></tr>
+            <tr><td>ダブルフラット・バインドロック・3Dボリュームの説明</td><td class="now">なし</td><td>一覧に説明あり</td><td><span class="state done">反映済み</span> 施術の違いの画像を一覧の説明に合わせて修正</td></tr>
+            <tr><td>フラットラッシュのカラー</td><td class="now">ブラウンへ変更可</td><td>ブラック・モカブラウン・マロンブラウン</td><td><span class="state done">反映済み</span> 毛質の違いの画像に3色を記載</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>追加する画像 <small>他店（他店_サービス2〜5）は、料金表のほかに「お得な予約」「施術の違い」「毛質の違い」をまとめている</small></h3>
+      <div class="add-grid">
+        <article class="card add">
+          <div class="add-head"><span class="state wait">オーナー確認待ち</span><h4>お得な予約</h4></div>
+          <p>次回予約割引・学生割引などがあれば、1枚の画像にまとめて追加します。今は割引の有無が分からないため、オーナーに確認してから作ります。</p>
+          <div class="refpair">
+            <figure><div class="old ref3"><img src="他店_サービス3.jpg" alt="他店の例: お得な次回予約。エクステオフ無料、6週間以内の予約で10%OFFなど"></div><figcaption>参考: 他店_サービス3</figcaption></figure>
+            <div class="placeholder">割引があれば<br>ここに画像を追加</div>
+          </div>
+        </article>
+        <article class="card add">
+          <div class="add-head"><span class="state done">作成済み</span><h4>施術の違い（2枚）</h4></div>
+          <p>施術ごとの仕上がりの違いを目元のイラストで見せ、「こんな方におすすめ」を添えます。参考: 他店_サービス4（線画で比較）、サービス概要_新8・新9（おすすめの方を箇条書き）。</p>
+          <div class="refpair">
+            <figure><img src="サービス_メニュー画像/guide1.png" alt="エクステの種類と選び方。シングル、フラットラッシュ、ダブルフラット、3Dボリューム、バインドロックをイラストとおすすめの方で比較"><figcaption><b>7 エクステの種類</b><br>5種類＋人気の組み合わせ</figcaption></figure>
+            <figure><img src="サービス_メニュー画像/guide2.png" alt="エクステとまつ毛パーマの違い。エクステ、パリジェンヌラッシュリフト、&amp;healthyを比較"><figcaption><b>8 エクステとパーマの違い</b><br>エクステ・パリジェンヌ・&amp;healthy</figcaption></figure>
+          </div>
+        </article>
+        <article class="card add">
+          <div class="add-head"><span class="state done">作成済み</span><h4>毛質の違い（1枚）</h4></div>
+          <p>参考画像はないので、施術の違いと同じデザインで作成。毛の太さと断面の形をイラストで比べ、カラー（ブラック・ブラウン）も載せます。</p>
+          <div class="refpair">
+            <figure><img src="サービス_メニュー画像/guide3.png" alt="毛質の違い。ミンク、セーブル、ブラウンミンク、フラットを毛の形と断面で比較"><figcaption><b>9 毛質の違い</b><br>ミンク・セーブル・ブラウンミンク・フラット＋カラー</figcaption></figure>
+          </div>
+        </article>
+        <article class="card add">
+          <div class="add-head"><span class="state done">作成済み</span><h4>カールの種類（1枚）</h4></div>
+          <p>J・C・Dカールを横から見た形とカールの強さで比べ、「なりたい目元で選ぶ」例（cute・sexy・doll eye）も載せます。</p>
+          <div class="refpair">
+            <figure><img src="サービス_メニュー画像/guide4.png" alt="カールの種類と選び方。J・C・Dカールの比較と、なりたい目元別のカールの組み合わせ例"><figcaption><b>10 カールの種類</b><br>J・C・D＋なりたい目元別の例</figcaption></figure>
+          </div>
+        </article>
+      </div>
+      <p class="note">「サービスを表示」に並べる順番の案: 1 メニュー一覧 → 2〜6 料金表 → 7〜10 施術・毛質・カールの違い →（割引があれば）お得な予約。</p>
+    </div>
+
+    <div class="block">
+      <h3>今のメニュー画像 <small>サービス概要_旧1〜7</small></h3>
+      <div class="gallery">
+        <figure><div class="old board"><img src="サービス概要_旧1.jpg" alt="バインドロックの告知ボード"></div><figcaption>旧1 告知（削除）</figcaption></figure>
+        <figure><div class="old"><img src="サービス概要_旧2.jpg" alt="3Dボリュームラッシュの料金表"></div><figcaption>旧2 3Dボリューム</figcaption></figure>
+        <figure><div class="old"><img src="サービス概要_旧3.jpg" alt="シングルエクステの料金表"></div><figcaption>旧3 シングル</figcaption></figure>
+        <figure><div class="old"><img src="サービス概要_旧4.jpg" alt="ダブルフラットの料金表"></div><figcaption>旧4 ダブルフラット</figcaption></figure>
+        <figure><div class="old"><img src="サービス概要_旧5.jpg" alt="バインドロックの料金表"></div><figcaption>旧5 バインドロック</figcaption></figure>
+        <figure><div class="old"><img src="サービス概要_旧6.jpg" alt="フラットラッシュの料金表"></div><figcaption>旧6 フラットラッシュ</figcaption></figure>
+        <figure><div class="old"><img src="サービス概要_旧7.jpg" alt="パリジェンヌラッシュリフトとエクステオフの料金表"></div><figcaption>旧7 パリジェンヌ</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>オーナーに確認したいこと</h3>
+      <ul class="ask">
+        <li>料金は今のGoogleマップの画像から写しています。ホットペッパーの最新の料金と同じか</li>
+        <li>バインドロック120束・140束が今の画像では「¥110,000」「¥125,000」になっている。新しい画像では「¥11,000」「¥12,500」と仮に入れたが、正しい金額は</li>
+        <li>ブラウンへの変更料金がメニューで違う（フラットラッシュ +¥1,320、3D・バインドロック +¥1,100、ダブルフラットは金額の記載なし）。この金額で合っているか</li>
+        <li>営業時間の画像（今の1枚目）は残すか</li>
+        <li>お得な割引はあるか（例: 次回予約の割引、学生割引、指名料、初回特典）。ある場合は内容・条件・割引額</li>
+        <li>料金表の画像と「まつげサロン」の一覧で料金が違うメニューが多い（上の表）。正しい料金はどちらか。ホットペッパーの料金とも合わせたい</li>
+        <li>ブラックティントパーマとまつ毛トリートメントパックの料金</li>
+        <li>&amp;healthyを付けられるのは、フラットラッシュとダブルフラットだけか（料金表の画像ではバインドロックにも付けられる書き方）</li>
+        <li>毛質の違いの説明（ミンク・セーブルなど）は一般的な内容で作成した。当店の毛質と合っているか</li>
+        <li>カールはJ・C・Dの3種類で作成した（一覧の3Dボリュームの説明より）。ほかにR・LCなどのカールも扱っているか</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="item" id="salon">
+    <div class="item-head">
+      <p class="eyebrow">項目 2 / 6</p>
+      <h2>サービス（まつげサロン）</h2>
+      <p class="summary">13件のメニューの並び順を、<mark>新しいメニュー画像と同じ「エクステ → まつ毛パーマ → オプション」の順</mark>に変えます。</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel">
+        <span class="tag before">修正前（今の並び）</span>
+        <ol class="gbp-list before-list">
+          <li><b>パリジェンヌラッシュリフト</b><span>¥8,000</span></li>
+          <li><b>まつ毛トリートメントパック</b><span>—</span></li>
+          <li><b>アイシャンプー</b><span>¥550</span></li>
+          <li><b>シングルエクステ ミンク</b><span>¥3,500〜</span></li>
+          <li><b>下まつ毛エクステ</b><span>¥1,100〜</span></li>
+          <li><b>カラーエクステ</b><span>¥1,500〜</span></li>
+          <li><b>3Dボリュームラッシュ</b><span>¥6,200〜</span></li>
+          <li><b>ダブルフラットラッシュ</b><span>¥7,500〜</span></li>
+          <li><b>フラットラッシュ</b><span>¥4,600〜</span></li>
+          <li><b>バインドロック</b><span>—</span></li>
+          <li><b>エクステオフ（リムーブ）</b><span>¥2,200〜</span></li>
+          <li><b>アンドヘルシー</b><span>¥5,400</span></li>
+          <li><b>ブラックティントパーマ</b><span>—</span></li>
+        </ol>
+        <p class="caption">アイシャンプーやトリートメントが上の方にあり、人気のフラットラッシュは9番目</p>
+      </div>
+
+      <div class="arrow" aria-hidden="true">→</div>
+
+      <div class="panel">
+        <span class="tag after">修正後（新しい並び）</span>
+        <ol class="gbp-list after-list">
+          <li class="grp">エクステ</li>
+          <li><b>フラットラッシュ</b><span>¥4,600〜</span></li>
+          <li><b>ダブルフラットラッシュ</b><span>¥7,500〜</span></li>
+          <li><b>3Dボリュームラッシュ</b><span>¥6,200〜</span></li>
+          <li><b>バインドロック</b><span>—</span></li>
+          <li><b>シングルエクステ ミンク</b><span>¥3,500〜</span></li>
+          <li class="grp">まつ毛パーマ</li>
+          <li><b>パリジェンヌラッシュリフト</b><span>¥8,000</span></li>
+          <li><b>ブラックティントパーマ</b><span>—</span></li>
+          <li class="grp">オプション・その他</li>
+          <li><b>アンドヘルシー</b><span>¥5,400</span></li>
+          <li><b>下まつ毛エクステ</b><span>¥1,100〜</span></li>
+          <li><b>カラーエクステ</b><span>¥1,500〜</span></li>
+          <li><b>エクステオフ（リムーブ）</b><span>¥2,200〜</span></li>
+          <li><b>アイシャンプー</b><span>¥550</span></li>
+          <li><b>まつ毛トリートメントパック</b><span>—</span></li>
+          <li class="new"><b>カールアップコーティング（フェニックス）</b><span>¥3,850</span></li>
+        </ol>
+        <p class="caption">グループ名は説明のためのもので、Googleマップには表示されません。料金は今の一覧のままです。</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>新しい並び順 <small>説明文は今の一覧のまま。料金は前の表のとおり要確認</small></h3>
+      <div class="table-wrap">
+        <table class="order-table">
+          <thead>
+            <tr><th>新</th><th>今</th><th>メニュー</th><th>説明（今の一覧）</th><th>料金（今の一覧）</th></tr>
+          </thead>
+          <tbody>
+            <tr class="grp-row"><td colspan="5">エクステ（メニュー画像 2〜4枚目）</td></tr>
+            <tr><td><span class="num a">1</span></td><td class="now">9</td><td>フラットラッシュ（40本〜）</td><td class="now">特殊加工のフラット形状で軽く、持ちのよいまつげエクステです。カラーはブラック・モカブラウン・マロンブラウンから選べます。</td><td>¥4,600〜</td></tr>
+            <tr><td><span class="num a">2</span></td><td class="now">8</td><td>ダブルフラットラッシュ（80束・160本〜）</td><td class="now">フラットマットラッシュで自まつ毛を上下から挟むように装着し、濃さと持ちを両立。&amp;Healthyとの組み合わせ可能。</td><td>¥7,500〜</td></tr>
+            <tr><td><span class="num a">3</span></td><td class="now">7</td><td>3Dボリュームラッシュ（40束・120本〜）</td><td class="now">極細毛0.07mm J、C、Dカール 長さもお選び頂けます！モチも◎ シングルで40本〜50本位、リペアにオススメです。</td><td>¥6,200〜</td></tr>
+            <tr><td><span class="num a">4</span></td><td class="now">10</td><td>バインドロック</td><td class="now">フラットマットラッシュにボリュームラッシュ（2D）をのせ、自まつ毛を挟み込むように付けるまつげエクステです。持ちがよく、はっきりとした濃さに仕上がります。</td><td><span class="state wait">記載なし</span></td></tr>
+            <tr><td><span class="num a">5</span></td><td class="now">4</td><td>シングルエクステ ミンク（40本〜）</td><td class="now">最高級ミンクエクステ</td><td>¥3,500〜</td></tr>
+            <tr class="grp-row"><td colspan="5">まつ毛パーマ（メニュー画像 5枚目）</td></tr>
+            <tr><td><span class="num a">6</span></td><td class="now">1</td><td>パリジェンヌラッシュリフト（まつ毛パーマ）</td><td class="now">【次世代まつ毛パーマ】自まつ毛を根元から80度立ち上げ、まつ毛を最大限長く見せるラッシュリフト</td><td>¥8,000</td></tr>
+            <tr><td><span class="num a">7</span></td><td class="now">13</td><td>ブラックティントパーマ</td><td class="now">ラッシュリフトにブラックティントを加えたまつ毛パーマです。マスカラを塗ったような仕上がりが2〜3週間続きます。</td><td><span class="state wait">要確認</span></td></tr>
+            <tr class="grp-row"><td colspan="5">オプション・その他（メニュー画像 6枚目）</td></tr>
+            <tr><td><span class="num a">8</span></td><td class="now">12</td><td>アンドヘルシー（エクステと同時のまつ毛カール）</td><td class="now">まつげエクステを付けたあとにカールをかける施術です。単品では予約できません。シングルのフラットマットラッシュかダブルフラットに追加してご利用ください。</td><td>¥5,400</td></tr>
+            <tr><td><span class="num a">9</span></td><td class="now">5</td><td>下まつ毛エクステ（10本〜）</td><td class="now">（説明なし）</td><td>¥1,100〜</td></tr>
+            <tr><td><span class="num a">10</span></td><td class="now">6</td><td>カラーエクステ（10本〜）</td><td class="now">（ブラウン／ベージュ／イエロー／オレンジ／ピンク／レッド／ワインレッド／パープル／グリーン／ブルーなど）</td><td>¥1,500〜</td></tr>
+            <tr><td><span class="num a">11</span></td><td class="now">11</td><td>エクステオフ（リムーブ）</td><td class="now">当店で付けたまつげエクステのオフ（リムーブ）です。他店で付けたエクステのオフは2,750円です。</td><td>¥2,200〜</td></tr>
+            <tr><td><span class="num a">12</span></td><td class="now">3</td><td>アイシャンプー</td><td class="now">アイシャドー、アイライナーなどのメイク汚れやまつ毛ダニの除去！</td><td>¥550</td></tr>
+            <tr><td><span class="num a">13</span></td><td class="now">2</td><td>まつ毛トリートメントパック</td><td class="now">まつ毛のトリートメント</td><td><span class="state wait">記載なし</span></td></tr>
+            <tr><td><span class="num a">14</span></td><td class="now"><span class="state wait">追加</span></td><td>フェニックス カールアップコーティング</td><td>まつ毛のコーティング剤（店頭販売）。ご自宅でのケアに。</td><td>¥3,850</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">並べ方の考え方: 新しいメニュー画像（1枚目の一覧）と同じ順番にして、店のおすすめのフラットラッシュを先頭に置きます。&amp;healthyは単品で予約できないオプションなので、オプションの先頭に置きます。アイシャンプーとトリートメントパックは最後です。</p>
+    </div>
+
+    <div class="block">
+      <h3>オーナーに確認したいこと</h3>
+      <ul class="ask">
+        <li>料金の確認（サービス（概要）の表と同じ）。一覧の料金を正しい金額にそろえる</li>
+        <li>バインドロック・ブラックティントパーマ・まつ毛トリートメントパックの料金（一覧に記載がない）</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="item" id="reviews">
+    <div class="item-head">
+      <p class="eyebrow">項目 3 / 6</p>
+      <h2>クチコミ</h2>
+      <p class="summary">修正する部分はありません。今の表示のままにします。</p>
+    </div>
+    <div class="review-now">
+      <div class="review-shot"><img src="口コミ.jpg" alt="今のクチコミ画面。評価4.7、クチコミ3件"></div>
+      <dl class="facts">
+        <dt>評価</dt><dd>★4.7</dd>
+        <dt>件数</dt><dd>3件</dd>
+        <dt>表示</dt><dd>評価とクチコミの一覧（関連度順）</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="item" id="photos">
+    <div class="item-head">
+      <p class="eyebrow">項目 4 / 6</p>
+      <h2>写真</h2>
+      <p class="summary">この画面を直接修正することはありません。概要やサービスに登録した写真が、ここにまとめて表示されます。</p>
+    </div>
+    <div class="review-now">
+      <div class="review-shot"><img src="写真.jpg" alt="今の写真画面。すべて・屋内・動画・メニューの分類と、内装や目元の写真が並ぶ"></div>
+      <dl class="facts">
+        <dt>分類</dt><dd>すべて・屋内・動画・メニュー</dd>
+        <dt>今の写真</dt><dd>内装（ソファ）、予約手順のスクリーンショット、旧メニュー画像、目元の写真、動画（1分7秒）</dd>
+        <dt>注意</dt><dd>概要・サービスの写真を差し替えたとき、古い写真（内装・予約手順・旧メニュー）を削除しないと、ここに残り続けます</dd>
+      </dl>
+    </div>
+
+    <div class="block">
+      <h3>今後の掲載予定の写真</h3>
+      <p class="note" style="font-size:13px">写真タブには、概要やサービスに登録した写真がまとめて表示されます。この改善案どおりに差し替えると、次の写真がここに並びます。</p>
+
+      <p class="plan-label">概要に登録する写真 <span class="state wait">当店の施術写真を撮影して用意</span></p>
+      <div class="gallery plan">
+        <figure><div class="sq"><img src="概要_新3.jpg" alt="例: おすすめメニューの症例" style="object-position: 50% 45%"><span class="logo-s">Li LyMoon</span></div><figcaption><b>1 おすすめメニューの症例</b><br>&amp;healthy・フラットラッシュ＋店名ロゴ</figcaption></figure>
+        <figure><div class="sq"><img src="概要_新6.png" alt="例: メニュー別の症例一覧"></div><figcaption><b>2 メニュー別の症例一覧</b><br>カール・長さ・本数/色を書き込む</figcaption></figure>
+        <figure><div class="sq"><img src="概要_新5.png" alt="例: 正面の目元と施術内容" style="object-position: 50% 45%"></div><figcaption><b>3 正面の目元＋施術内容</b></figcaption></figure>
+        <figure><div class="sq"><img src="概要_新7.png" alt="例: 正面の目元と施術内容"></div><figcaption><b>4 正面の目元＋施術内容</b></figcaption></figure>
+        <figure><div class="sq"><img src="概要_新2.jpg" alt="例: 目元を上下2枚に並べた症例写真" style="object-position: 50% 50%"></div><figcaption><b>5 目元の症例写真</b><br>上下2枚で仕上がりを見せる</figcaption></figure>
+        <figure><div class="sq"><img src="概要_新4.jpg" alt="例: リボンの装飾を合わせた目元の症例写真" style="object-position: 50% 45%"></div><figcaption><b>6 目元の症例写真</b><br>季節の装飾を合わせる</figcaption></figure>
+        <figure><div class="sq"><img src="サービス概要_新10.png" alt="例: カール別の仕上がり" style="object-position: 50% 33%"></div><figcaption><b>7 カール別の仕上がり</b><br>J・C・Dを比べる</figcaption></figure>
+        <figure><div class="sq"><img src="サービス概要_新11.png" alt="例: なりたい目元別のデザイン" style="object-position: 50% 38%"></div><figcaption><b>8 なりたい目元別のデザイン</b><br>cute・sexy・doll eye</figcaption></figure>
+      </div>
+      <p class="note">写真は他店の例です。実際は当店で施術した写真に置き換えます。</p>
+
+      <p class="plan-label">サービスに登録する画像 <span class="state done">作成済み</span></p>
+      <div class="gallery plan">
+        <figure><img src="サービス_メニュー画像/menu1.png" alt="メニュー一覧"><figcaption><b>1</b> メニュー一覧</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu2.png" alt="フラットラッシュの料金表"><figcaption><b>2</b> フラットラッシュ</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu3.png" alt="ボリュームの料金表"><figcaption><b>3</b> ボリューム</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu4.png" alt="シングルの料金表"><figcaption><b>4</b> シングル</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu5.png" alt="ラッシュリフトの料金表"><figcaption><b>5</b> ラッシュリフト</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/menu6.png" alt="オプションの料金表"><figcaption><b>6</b> オプション</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/guide1.png" alt="エクステの種類"><figcaption><b>7</b> エクステの種類</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/guide2.png" alt="エクステとパーマの違い"><figcaption><b>8</b> エクステとパーマの違い</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/guide3.png" alt="毛質の違い"><figcaption><b>9</b> 毛質の違い</figcaption></figure>
+        <figure><img src="サービス_メニュー画像/guide4.png" alt="カールの種類"><figcaption><b>10</b> カールの種類</figcaption></figure>
+      </div>
+      <p class="note">お得な予約の画像は、割引があればあとから追加します。</p>
+    </div>
+  </section>
+
+  <section class="item" id="posts">
+    <div class="item-head">
+      <p class="eyebrow">項目 5 / 6</p>
+      <h2>最新情報</h2>
+      <p class="summary">古い投稿を削除し、画像は<mark>一覧で切れない横長サイズ</mark>に揃え、施術写真の投稿には<mark>デザイン（カール・長さ・本数）を書き添え</mark>ます。</p>
+    </div>
+
+    <div class="block">
+      <h3>修正内容</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>投稿</th><th>今</th><th>修正</th></tr></thead>
+          <tbody>
+            <tr><td>2026/04/09<br><span class="now">フラットラッシュの文字画像</span></td><td class="now">画像が縦長で、一覧では文字が途中で切れる。タップしないと全体が見えない</td><td><span class="state wait">サイズ変更</span> 横長4:3（1200×900px）の画像にし、文字は画像の内側に収める</td></tr>
+            <tr><td>2024/03/27・2020/10/28<br><span class="now">文章のみの投稿</span></td><td class="now">旧店名（ヴィルシア千葉）の古い投稿</td><td><span class="state wait">削除</span></td></tr>
+            <tr><td>2024/04/02<br><span class="now">インスタ始めました</span></td><td class="now">旧店名の頃の古い投稿</td><td><span class="state wait">削除</span></td></tr>
+            <tr><td>2024/09/27<br><span class="now">リップの販売</span></td><td class="now">商品写真1枚と文章のみ</td><td><span class="state done">画像作成済み</span> 他店のような「HOME CARE」画像に差し替え</td></tr>
+            <tr><td>施術写真の投稿<br><span class="now">7件（2026年3月〜10月）</span></td><td class="now">クーポンの案内だけで、写真のデザインが分からない</td><td><span class="state wait">追記</span> 本文の最初にデザインを書く（他店の投稿のように）</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>画像のサイズ <small>2026/04/09 フラットラッシュの投稿</small></h3>
+      <div class="compare">
+        <div class="panel">
+          <span class="tag before">修正前</span>
+          <div class="shot-box"><div class="crop" style="aspect-ratio:869/830"><img src="最新情報_旧5.jpg" alt="フラットラッシュの投稿。縦長の文字画像が一覧で切れている" style="margin-top:-67.9%"></div></div>
+          <p class="caption">一覧では画像が横長の枠に切り取られ、「高持続＆超軽…」「フラットラッシ…」と文字が切れる</p>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="panel">
+          <span class="tag after">修正後</span>
+          <div class="frame43"><span>1200 × 900 px（4:3）</span><i>文字はこの内側に</i></div>
+          <p class="caption">最新情報の一覧は横長4:3の枠で表示されます。最初から4:3で作ると、タップしなくてもスクロール中に全体が見えます</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>削除する投稿</h3>
+      <div class="gallery del">
+        <figure><div class="crop" style="aspect-ratio:869/1130"><img src="最新情報_旧7.jpg" alt="2024年と2020年の文章のみの投稿" style="margin-top:-61.0%"></div><figcaption>2024/03/27・2020/10/28 文章のみ</figcaption></figure>
+        <figure><div class="crop" style="aspect-ratio:869/1240"><img src="最新情報_旧8.jpg" alt="インスタ始めましたの投稿" style="margin-top:-33.4%"></div><figcaption>2024/04/02 インスタ始めました</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>店頭販売の画像 <small>2024/09/27 リップの投稿を差し替え</small></h3>
+      <div class="compare">
+        <div class="panel">
+          <span class="tag before">修正前</span>
+          <div class="shot-box"><div class="crop" style="aspect-ratio:869/1530"><img src="最新情報_旧9.jpg" alt="リップの商品写真と文章の投稿" style="margin-top:-29.9%"></div></div>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="panel">
+          <span class="tag after">修正後（作成済み）</span>
+          <div class="post-mock pm-auto">
+            <div class="pm-head"><img src="最新情報_旧9.jpg" alt="投稿のヘッダー"></div>
+            <div class="pm-img"><img src="サービス_メニュー画像/post_homecare.png" alt="HOME CARE。カールアップコーティング¥3,850とリップアディクトを、おすすめの方と一緒に紹介する画像"></div>
+            <div class="pm-text">店舗の販売商品
+
+まつ毛と唇のホームケアアイテムを店頭で販売しております☆
+
+・PHOENIX カールアップコーティング ¥3,850
+束感＆スタイリング剤。パーマやエクステのモチUPに
+
+・リップアディクト
+季節の変わり目の唇の乾燥に
+
+店舗で購入いただけるので、気になる方はお気軽にご相談ください(^_^)/</div>
+            <div class="pm-foot"><img src="最新情報_旧9.jpg" alt="詳細ボタン"></div>
+          </div>
+          <p class="caption">画像を作成した「HOME CARE」（1200×900px）に差し替え、本文も2つの商品に合わせて書き直します</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>施術写真の投稿にデザインを書く <small>例: 2026年10月のダブルフラットの投稿</small></h3>
+      <div class="compare">
+        <div class="panel">
+          <span class="tag before">修正前</span>
+          <div class="shot-box"><div class="crop" style="aspect-ratio:869/1400"><img src="最新情報_旧15.jpg" alt="10月のダブルフラット＋&amp;healthyの投稿。写真とクーポンの案内だけで、デザインの記載がない" style="margin-top:-29.9%"></div></div>
+          <p class="caption">クーポンの案内だけで、写真のまつ毛がどんなデザインなのか分からない</p>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="panel">
+          <span class="tag after">修正後</span>
+          <div class="post-mock">
+            <div class="pm-top"><img src="最新情報_新4.jpg" alt="目元の写真。上まつ毛にC9・C10・C9、下まつ毛にJ6と書き込まれている"></div>
+            <div class="pm-text">⬇︎design
+パリエク
+color ブラック
+upper c9/c10/c9 80本
+lower ALL j6 30本
+*
+10月start🎃🌙
+今月もよろしくお願いします✨
+
+*
+【オススメcoupon】
+🍁ダブルフラット100束+&amp;healthy ¥13,900
+●初回オフ▶️無料
+●再来様オフ
+ㄴ3週以内来店▶️¥330
+ㄴ3週以降来店▶️¥1,100
+
+✔ダブルフラットでモチと濃さ・ボリュームを両立
+✔&amp;healthyでまつげを上げてよりぱっちりした仕上がりに
+✔下がりまつげの方にオススメ
+
+是非一度お試しください🤍</div>
+          </div>
+          <p class="caption">本文の最初に「⬇︎design」から始まる5行を書き足します。写真とデザインは他店の例です。実際は当店の施術写真と、施術した内容を書きます</p>
+        </div>
+      </div>
+      <p class="note">ほかの施術写真の投稿6件（2026年3月・6月・7月・8月・9月と、&amp;healthyの紹介）も同じように書き足します。</p>
+    </div>
+
+    <div class="block">
+      <h3>オーナーに確認したいこと</h3>
+      <ul class="ask">
+        <li>施術写真の投稿7件のデザイン（カール・長さ・本数・カラー）。施術した人に記入してもらう</li>
+        <li>リップアディクトの価格と、ほかに店頭で売っている商品</li>
+        <li>投稿の本文に旧店名（ヴィルシア千葉・旧: vilucia千葉）と、番号のない「TEL」が残っている。今後の定型文を新しい店名と電話番号にそろえるか</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="item" id="info">
+    <div class="item-head">
+      <p class="eyebrow">項目 6 / 6</p>
+      <h2>情報</h2>
+      <p class="summary">修正する部分はありません。今の表示のままにします。</p>
+    </div>
+    <div class="review-now">
+      <div class="review-shot info-shot"><img src="情報_旧.jpg" alt="今の情報画面。サービスオプション、バリアフリー、設備、プラン、決済方法が並ぶ"></div>
+      <dl class="facts">
+        <dt>サービス</dt><dd>実店舗の営業</dd>
+        <dt>設備</dt><dd>トイレ</dd>
+        <dt>プラン</dt><dd>要予約・事前予約がおすすめ</dd>
+        <dt>決済方法</dt><dd>クレジットカード・NFCモバイル決済・PayPay・交通系ICカード</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="item" id="howto">
+    <div class="item-head">
+      <p class="eyebrow">参考</p>
+      <h2>撮り方と加工方法</h2>
+      <p class="summary">症例写真を撮るとき・加工するときの参考動画です（Instagramのリール）。</p>
+    </div>
+    <ol class="ref-list">
+        <li><a href="https://www.instagram.com/reel/DclPCT4z7ii/?vrfl=N3h3ZGN6bW94a3Ri" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 1</span><span class="ref-url">instagram.com/reel/DclPCT4z7ii/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+        <li><a href="https://www.instagram.com/reel/DbnUZjspIC-/?srtk=bmV1ZTFpdDZ1eWpl" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 2</span><span class="ref-url">instagram.com/reel/DbnUZjspIC-/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+        <li><a href="https://www.instagram.com/reel/DOlEApXk_x3/?dlrf=aGV2YmdyMzZrZm5h" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 3</span><span class="ref-url">instagram.com/reel/DOlEApXk_x3/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+        <li><a href="https://www.instagram.com/reel/DWMBB4iE4wF/?obrf=MXY4dmtuOG1sbmpmcw==" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 4</span><span class="ref-url">instagram.com/reel/DWMBB4iE4wF/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+        <li><a href="https://www.instagram.com/reel/DcU15PsMD3q/?vrfl=ZjY1eGM2c2V3dnJz" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 5</span><span class="ref-url">instagram.com/reel/DcU15PsMD3q/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+        <li><a href="https://www.instagram.com/reel/DaCT-z8zpN8/?cplk=MW02emY2M2k1Z2JzMw==" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 6</span><span class="ref-url">instagram.com/reel/DaCT-z8zpN8/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+        <li><a href="https://www.instagram.com/reel/C8E29ydvrPg/?exln=MzI2N2k4dmJyYXhv" target="_blank" rel="noopener noreferrer"><span class="ref-no">参考動画 7</span><span class="ref-url">instagram.com/reel/C8E29ydvrPg/</span><span class="ref-go">Instagramで開く ↗</span></a></li>
+    </ol>
+  </section>
+
+</div>
