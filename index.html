@@ -260,7 +260,7 @@
   /* 全体: 修正前と完成形 */
   .movie { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
   .movie h3 { font-size: 16px; }
-  .movie-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 280px)); justify-content: center; gap: 24px; }
+  .movie-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 360px)); justify-content: center; gap: 24px; }
   .movie-pair figure { margin: 0; display: grid; gap: 8px; justify-items: center; min-width: 0; }
   .movie video { width: 100%; aspect-ratio: 590 / 1280; border-radius: 18px; background: #000; display: block; }
   @media (max-width: 520px) { .movie-pair { gap: 10px; } }
@@ -307,12 +307,10 @@
       <p class="summary">Googleマップの各項目を、<mark>今の画面</mark>と<mark>改善案をすべて反映した完成形</mark>で並べました。</p>
     </div>
     <div class="movie">
-      <h3>動画で比べる <small>店舗ページを、概要から順にタップしてスクロールした様子</small></h3>
       <div class="movie-pair">
         <figure><span class="tag before">修正前（今の画面・47秒）</span><video src="全体の動画.mp4" controls playsinline muted preload="metadata" poster="概要.jpg"></video></figure>
         <figure><span class="tag after">完成形（47秒）</span><video src="完成形/完成形_全体の動画.mp4" controls playsinline muted preload="metadata" poster="完成形/01_概要.png"></video></figure>
       </div>
-      <p class="note">流れ: 概要 → サービス（メニュー画像を横にスクロール）→ まつげサロン → クチコミ → 写真 → 最新情報 → 情報</p>
     </div>
     <div class="ba-grid">
       <article class="ba">
