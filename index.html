@@ -263,6 +263,9 @@
   .post-points li::before { content: "POINT"; align-self: center; padding: 2px 8px; border-radius: 999px; background: var(--after); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .08em; line-height: 1.4; }
   .post-points b { color: var(--after); white-space: nowrap; }
 
+  /* 対応済みの注記 */
+  .done-note { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--after-soft); color: var(--after); font-size: 13.5px; font-weight: 500; }
+
   /* 最新情報: 店頭販売の画像の注記 */
   .caption-note { margin: 0; max-width: 340px; padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--fg); font-size: 12.5px; line-height: 1.6; }
 
@@ -793,7 +796,8 @@
     </div>
 
     <div class="block">
-      <h3>新しい並び順 <small>説明文・料金は今の一覧のまま（料金はホットペッパーと同じ）</small></h3>
+      <h3>新しい並び順 <span class="state done">並び替え済み</span> <small>説明文・料金は今の一覧のまま（料金はホットペッパーと同じ）</small></h3>
+      <p class="done-note">実際のGoogleマップのサービス（まつげサロン）は、この順番に並び替えが終わっています。</p>
       <div class="table-wrap">
         <table class="order-table">
           <thead>
