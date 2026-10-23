@@ -257,6 +257,12 @@
   .ref-no { font-weight: 700; font-size: 14px; }
   .ref-url { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
   .ref-go { font-size: 12px; color: var(--accent); font-weight: 500; margin-top: 4px; }
+  /* 最新情報: 施術写真の投稿のポイント */
+  .post-points { margin: 0; padding: 0; list-style: none; counter-reset: pp; display: grid; gap: 8px; }
+  .post-points li { counter-increment: pp; display: grid; grid-template-columns: auto auto 1fr; gap: 10px; align-items: baseline; padding: 12px 14px; border-radius: 10px; background: var(--after-soft); font-size: 14px; }
+  .post-points li::before { content: counter(pp); display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--after); color: #fff; font-size: 12px; font-weight: 700; }
+  .post-points b { color: var(--after); white-space: nowrap; }
+
   /* 最新情報: 店頭販売の画像の注記 */
   .caption-note { margin: 0; max-width: 340px; padding: 10px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--fg); font-size: 12.5px; line-height: 1.6; }
 
@@ -999,6 +1005,10 @@ lower ALL j6 30本
           <p class="caption">本文の最初に「⬇︎design」から始まる5行を書き足します。写真とデザインは他店の例です。実際は当店の施術写真と、施術した内容を書きます</p>
         </div>
       </div>
+      <ol class="post-points">
+        <li><b>写真</b>画像を鮮明にし、施術のデザインが伝わりやすい見やすい写真に変える</li>
+        <li><b>本文</b>投稿や写真を見た人が施術内容とメニューを分かりやすいように（予約しやすいように）、本文にメニューとデザインを入れる</li>
+      </ol>
       <p class="note">ほかの施術写真の投稿6件（2026年3月・6月・7月・8月・9月と、&amp;healthyの紹介）も同じように書き足します。</p>
     </div>
 
