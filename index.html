@@ -258,6 +258,8 @@
   .ref-url { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
   .ref-go { font-size: 12px; color: var(--accent); font-weight: 500; margin-top: 4px; }
   /* 全体: 修正前と完成形 */
+  .summary mark.m-before { background: var(--before-soft); color: var(--before); }
+  .summary mark.m-after { background: var(--after-soft); color: var(--after); }
   .movie { display: grid; gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
   .movie h3 { font-size: 16px; }
   .movie-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 360px)); justify-content: center; gap: 24px; }
@@ -304,7 +306,7 @@
     <div class="item-head">
       <p class="eyebrow">全体</p>
       <h2>修正前と完成形</h2>
-      <p class="summary">Googleマップの各項目を、<mark>今の画面</mark>と<mark>改善案をすべて反映した完成形</mark>で並べました。</p>
+      <p class="summary">Googleマップの各項目を、<mark class="m-before">今の画面</mark>と<mark class="m-after">改善案をすべて反映した完成形</mark>で並べました。</p>
     </div>
     <div class="movie">
       <div class="movie-pair">
