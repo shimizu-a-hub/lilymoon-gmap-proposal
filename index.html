@@ -257,6 +257,16 @@
   .ref-no { font-weight: 700; font-size: 14px; }
   .ref-url { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
   .ref-go { font-size: 12px; color: var(--accent); font-weight: 500; margin-top: 4px; }
+  /* 料金の見直し: Googleマップ内の場所 */
+  .where { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 300px)); gap: 20px; }
+  .where figure { margin: 0; display: grid; gap: 8px; align-content: start; }
+  .where figcaption { display: grid; gap: 2px; font-size: 14px; }
+  .where figcaption span { font-size: 12px; color: var(--muted); }
+  .where-shot { position: relative; overflow: hidden; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
+  .where-shot img { display: block; width: 100%; }
+  .where-mark { position: absolute; border: 3px solid var(--before); border-radius: 10px; }
+  .where p { margin: 0; font-size: 12px; color: var(--muted); }
+
   /* 全体: 修正前と完成形 */
   .summary mark.m-before { background: var(--before-soft); color: var(--before); }
   .summary mark.m-after { background: var(--after-soft); color: var(--after); }
@@ -608,6 +618,18 @@
 
     <div class="block">
       <h3>料金の見直し</h3>
+      <div class="where">
+        <figure>
+          <figcaption><b>① 料金表の画像</b><span>サービス ＞ 概要 ＞「サービスを表示」</span></figcaption>
+          <div class="where-shot" style="aspect-ratio: 869 / 720"><img src="サービス概要.jpg" alt="サービスの概要タブ。「サービスを表示」に料金表の画像が並ぶ" style="margin-top: -32.2%"><span class="where-mark" style="left: 2%; top: 43%; width: 96%; height: 37%"></span></div>
+          <p>古い料金のままでした。新しいメニュー画像に差し替えます</p>
+        </figure>
+        <figure>
+          <figcaption><b>② メニューの一覧</b><span>サービス ＞ まつげサロン</span></figcaption>
+          <div class="where-shot" style="aspect-ratio: 869 / 1150"><img src="サービスまつげサロン_旧1.jpg" alt="サービスのまつげサロンタブ。メニュー名・説明・料金の一覧" style="margin-top: -55%"><span class="where-mark" style="left: 2%; top: 2%; width: 96%; height: 94%; border-color: var(--after)"></span></div>
+          <p>ホットペッパーと同じ料金でした。料金は変えません</p>
+        </figure>
+      </div>
       <p class="note" style="font-size:13px">新しいメニュー画像の料金は、ホットペッパービューティーのメニュー（クーポンを除く）に合わせました。今の料金表の画像は古い料金のままでした。Googleマップの「まつげサロン」の一覧の料金は、ホットペッパーと同じでした。</p>
       <div class="table-wrap">
         <table>
